@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time Travel</title>
+  <style>
+    /* Reset styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Fullscreen video background */
+    body {
+      background: black;
+      overflow: hidden;
+    }
+
+    video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
+    /* Centered container for the button */
+    .center-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    /* Button styles */
+    .long-press-button {
+      position: relative;
+      display: inline-block;
+      width: 300px; /* Adjusted for single-line text */
+      padding: 15px 0;
+      background-color: transparent; /* Transparent background */
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 18px;
+      text-transform: uppercase;
+      border: 2px solid #fff;
+      border-radius: 50px;
+      cursor: pointer;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .long-press-button span {
+      position: relative;
+      z-index: 2;
+      display: inline-block;
+    }
+
+    /* Loading effect inside the button */
+    .loading-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.1); /* Subtle translucent white */
+      width: 0;
+      z-index: 1;
+      transition: width 2.5s linear; /* Smooth fill animation */
+    }
+
+    /* Hidden text transition */
+    .hidden-text {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-top: 15px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+
+    .hidden-text.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <!-- Video Background -->
+  <video id="backgroundVideo" autoplay muted loop>
+    <source src="runningmanreverse.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Centered Button -->
+  <div class="center-container">
+    <button id="timeTravelButton" class="long-press-button">
+      <div class="loading-bar" id="loadingBar"></div>
+      <span>Hold to Turn Back Time</span>
+    </button>
+    <div id="hiddenText" class="hidden-text">Hold longer to activate time travel...</div>
+  </div>
+
+  <!-- Whoosh Sound -->
+  <audio id="whooshSound" src="whoosh.mp3" preload="auto"></audio>
+
+  <script>
+    const button = document.getElementById("timeTravelButton");
+    const hiddenText = document.getElementById("hiddenText");
+    const video = document.getElementById("backgroundVideo");
+    const loadingBar = document.getElementById("loadingBar");
+    const whooshSound = document.getElementById("whooshSound");
+
+    let holdTimer;
+    let speedIncreaseInterval;
+    let playbackRate = 1; // Initial forward playback rate
+    let reversePlaybackInterval;
+
+    // Function to simulate reverse playback
+    function playVideoInReverse() {
+      if (video.currentTime <= 0) {
+        video.currentTime = video.duration;
+      } else {
+        video.currentTime -= 0.03; // Reverse speed
+      }
+    }
+
+    // Start reverse playback on load
+    window.onload = () => {
+      video.currentTime = video.duration;
+      reversePlaybackInterval = setInterval(playVideoInReverse, 50); // Faster for smooth reverse playback
+    };
+
+    // On button press
+    button.addEventListener("mousedown", () => {
+      hiddenText.classList.add("visible");
+
+      // Stop reverse playback
+      clearInterval(reversePlaybackInterval);
+
+      // Start forward playback
+      video.pause();
+      video.src = "runningman.mp4";
+      video.load();
+      video.play();
+      video.playbackRate = 1;
+
+      // Start loading animation
+      loadingBar.style.transition = "width 2.5s linear";
+      loadingBar.style.width = "100%";
+
+      // Increase playback speed
+      playbackRate = 1;
+      speedIncreaseInterval = setInterval(() => {
+        playbackRate = Math.min(playbackRate + 0.1, 4);
+        video.playbackRate = playbackRate;
+      }, 200);
+
+      // Play the whoosh sound
+      whooshSound.play();
+
+      // Simulate long press
+      holdTimer = setTimeout(() => {
+        window.location.href = "memorypalace.html";
+      }, 2500); // Long press duration
+    });
+
+    // On button release
+    const resetToDefault = () => {
+      clearTimeout(holdTimer);
+      clearInterval(speedIncreaseInterval);
+
+      // Reset loading animation
+      loadingBar.style.transition = "width 0.2s ease-out";
+      loadingBar.style.width = "0%";
+
+      hiddenText.classList.remove("visible");
+
+      // Stop the whoosh sound
+      whooshSound.pause();
+      whooshSound.currentTime = 0; 
+      whooshSound.playbackRate = 1.7;  // This will make the sound play twice as fast
+
+      // Return to reverse playback
+      video.pause();
+      video.src = "runningmanreverse.mp4";
+      video.load();
+      video.currentTime = video.duration;
+      reversePlaybackInterval = setInterval(playVideoInReverse, 50); // Smooth reverse playback
+    };
+
+    button.addEventListener("mouseup", resetToDefault);
+    button.addEventListener("mouseleave", resetToDefault);
+  </script>
+</body>
+</html>

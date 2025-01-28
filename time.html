@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bouncing Hourglasses</title>
+  <style>
+    canvas {
+      display: block;
+      margin: 0;
+      padding: 0;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: black;
+    }
+
+    h1.text {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: large;
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: azure;
+      z-index: 10;
+    }
+
+    /* Grab cursor when hovering over hourglass1 */
+    .grab-cursor {
+      cursor: grab;
+    }
+
+    /* Grabbing cursor when the object is being dragged */
+    .grabbing-cursor {
+      cursor: grabbing;
+    }
+  </style>
+</head>
+<body>
+  <h1 class="text">Catch time before it runs out. </h1>
+  <script>
+    const myGameArea = {
+      canvas: document.createElement("canvas"),
+      start: function () {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+        this.context = this.canvas.getContext("2d");
+        document.body.appendChild(this.canvas);
+        this.interval = setInterval(updateGameArea, 20); // 50 FPS
+        window.addEventListener("resize", this.resizeCanvas.bind(this));
+      },
+      clear: function () {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+      },
+      resizeCanvas: function () {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+    };
+
+    function component(width, height, imgSrc, x, y, link) {
+      this.width = width;
+      this.height = height;
+      this.x = x;
+      this.y = y;
+      this.speedX = Math.random() * 4 - 2; // Random horizontal speed
+      this.speedY = Math.random() * 4 - 2; // Random vertical speed
+      this.gravity = 0.1;
+      this.gravitySpeed = 0;
+      this.bounce = 1.0;
+      this.dragging = false;
+      this.link = link;
+
+      // Load the image
+      this.image = new Image();
+      this.image.src = imgSrc;
+
+      this.update = function () {
+        const ctx = myGameArea.context;
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+      };
+
+      this.newPos = function () {
+        if (!this.dragging) {
+          this.gravitySpeed += this.gravity;
+          this.x += this.speedX;
+          this.y += this.speedY + this.gravitySpeed;
+          this.hitBounds();
+        }
+      };
+
+      this.hitBounds = function () {
+        const rockBottom = myGameArea.canvas.height - this.height;
+        const wallLeft = 0;
+        const wallRight = myGameArea.canvas.width - this.width;
+
+        if (this.y > rockBottom) {
+          this.y = rockBottom;
+          this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+          this.speedY *= this.bounce;
+        }
+        if (this.y < 0) {
+          this.y = 0;
+          this.gravitySpeed = -(this.gravitySpeed * this.bounce);
+        }
+        if (this.x < wallLeft) {
+          this.x = wallLeft;
+          this.speedX = -(this.speedX * this.bounce);
+        }
+        if (this.x > wallRight) {
+          this.x = wallRight;
+          this.speedX = -(this.speedX * this.bounce);
+        }
+      };
+
+      this.isMouseOver = function (mouseX, mouseY) {
+        return (
+          mouseX > this.x &&
+          mouseX < this.x + this.width &&
+          mouseY > this.y &&
+          mouseY < this.y + this.height
+        );
+      };
+    }
+
+    const hourglasses = [];
+    let draggedObject = null;
+
+    function startGame() {
+      myGameArea.start();
+
+      // Add all 9 hourglass images with links
+      const hourglassImages = [
+        { src: "hourglass1.png", link: "timetravel.html" },
+        { src: "hourglass2.png", link: "error.html" },
+        { src: "hourglass3.png", link: "error.html" },
+        { src: "hourglass4.png", link: "error.html" },
+        { src: "hourglass5.png", link: "error.html" },
+        { src: "hourglass6.png", link: "error.html" },
+        { src: "hourglass7.png", link: "error.html" },
+        { src: "hourglass8.png", link: "error.html" },
+        { src: "hourglass9.png", link: "error.html" }
+      ];
+
+      // Create hourglass components
+      for (let i = 0; i < hourglassImages.length; i++) {
+        const width = 160; // Larger hourglass width
+        const height = 240; // Larger hourglass height
+        const x = Math.random() * (myGameArea.canvas.width - width);
+        const y = Math.random() * (myGameArea.canvas.height - height); // Randomize the y position to allow them to fall from anywhere within the visible area
+
+        const link = hourglassImages[i].link;
+
+        hourglasses.push(new component(width, height, hourglassImages[i].src, x, y, link));
+      }
+
+      // Add mouse interaction for dragging
+      myGameArea.canvas.addEventListener("mousedown", startDrag);
+      myGameArea.canvas.addEventListener("mousemove", drag);
+      myGameArea.canvas.addEventListener("mouseup", stopDrag);
+
+      // Add mouse hover event to change cursor when hovering over hourglass1
+      myGameArea.canvas.addEventListener("mousemove", function (event) {
+        const mouseX = event.offsetX;
+        const mouseY = event.offsetY;
+
+        // Check if the cursor is over hourglass1 and change the cursor style
+        let cursorChanged = false;
+        for (const hourglass of hourglasses) {
+          if (hourglass.isMouseOver(mouseX, mouseY) && hourglass.image.src.includes("hourglass1.png")) {
+            document.body.classList.add("grab-cursor"); // Add grab cursor class to body
+            cursorChanged = true;
+            break; // Exit after changing the cursor for hourglass1
+          }
+        }
+
+        // Remove the grab cursor if not hovering over hourglass1
+        if (!cursorChanged) {
+          document.body.classList.remove("grab-cursor");
+        }
+      });
+
+      // Add click event for hourglasses
+      myGameArea.canvas.addEventListener("click", function (event) {
+        const mouseX = event.offsetX;
+        const mouseY = event.offsetY;
+
+        // Check if any hourglass is clicked and go to the linked page
+        for (const hourglass of hourglasses) {
+          if (hourglass.isMouseOver(mouseX, mouseY) && hourglass.link) {
+            window.location.href = hourglass.link;
+            break;
+          }
+        }
+      });
+    }
+
+    function updateGameArea() {
+      myGameArea.clear();
+
+      // Update and draw each hourglass
+      hourglasses.forEach((hourglass, index) => {
+        hourglass.newPos();
+        hourglass.update();
+
+        // Check for collisions with other hourglasses
+        for (let j = index + 1; j < hourglasses.length; j++) {
+          const other = hourglasses[j];
+          if (checkCollision(hourglass, other)) {
+            resolveCollision(hourglass, other);
+          }
+        }
+      });
+    }
+
+    function checkCollision(obj1, obj2) {
+      const dx = obj1.x + obj1.width / 2 - (obj2.x + obj2.width / 2);
+      const dy = obj1.y + obj1.height / 2 - (obj2.y + obj2.height / 2);
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      return distance < (obj1.width / 2 + obj2.width / 2); // Radius-based collision check
+    }
+
+    function resolveCollision(obj1, obj2) {
+      const dx = obj1.x + obj1.width / 2 - (obj2.x + obj2.width / 2);
+      const dy = obj1.y + obj1.height / 2 - (obj2.y + obj2.height / 2);
+      const angle = Math.atan2(dy, dx);
+
+      // Calculate velocities along the angle of collision
+      const speed1 = Math.sqrt(obj1.speedX ** 2 + obj1.speedY ** 2);
+      const speed2 = Math.sqrt(obj2.speedX ** 2 + obj2.speedY ** 2);
+
+      const direction1 = Math.atan2(obj1.speedY, obj1.speedX);
+      const direction2 = Math.atan2(obj2.speedY, obj2.speedX);
+
+      // New velocities after collision
+      const newSpeedX1 = speed2 * Math.cos(direction2 - angle);
+      const newSpeedY1 = speed2 * Math.sin(direction2 - angle);
+      const newSpeedX2 = speed1 * Math.cos(direction1 - angle);
+      const newSpeedY2 = speed1 * Math.sin(direction1 - angle);
+
+      obj1.speedX = newSpeedX1 * Math.cos(angle) - newSpeedY1 * Math.sin(angle);
+      obj1.speedY = newSpeedX1 * Math.sin(angle) + newSpeedY1 * Math.cos(angle);
+
+      obj2.speedX = newSpeedX2 * Math.cos(angle) - newSpeedY2 * Math.sin(angle);
+      obj2.speedY = newSpeedX2 * Math.sin(angle) + newSpeedY2 * Math.cos(angle);
+    }
+
+    function startDrag(e) {
+      const mouseX = e.offsetX;
+      const mouseY = e.offsetY;
+
+      for (const hourglass of hourglasses) {
+        if (hourglass.isMouseOver(mouseX, mouseY)) {
+          draggedObject = hourglass;
+          draggedObject.dragging = true;
+          document.body.classList.add("grabbing-cursor"); // Change cursor to grabbing
+          break;
+        }
+      }
+    }
+
+    function drag(e) {
+      if (draggedObject && draggedObject.dragging) {
+        draggedObject.x = e.offsetX - draggedObject.width / 2;
+        draggedObject.y = e.offsetY - draggedObject.height / 2;
+      }
+    }
+
+    function stopDrag() {
+      if (draggedObject) {
+        draggedObject.dragging = false;
+        document.body.classList.remove("grabbing-cursor"); // Reset cursor when drag ends
+        draggedObject = null;
+      }
+    }
+
+    // Start the game
+    startGame();
+  </script>
+</body>
+</html>
+

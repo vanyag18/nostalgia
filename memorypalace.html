@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive House</title>
+  <style>
+    body {
+      margin: 0;
+      overflow-x: hidden;
+      font-family: 'Courier', monospace; /* Using Courier font */
+      background: #000;
+    }
+
+    .container {
+      position: relative;
+      height: 200vh; /* Scrollable space */
+    }
+
+    .floor {
+      position: absolute;
+      transition: transform 0.3s ease;
+      overflow: visible;
+    }
+
+    .floor img {
+      width: 60vw;
+      height: auto;
+      max-width: 400px; /* Uniform max width */
+      object-fit: contain; /* Prevent distortion */
+      transition: transform 0.3s ease, filter 0.3s ease; /* Add transition for glow effect */
+      border-radius: 15px; /* Ensure rounded corners for irregular PNGs */
+    }
+
+    /* Enlarge image on hover and add glow effect */
+    .floor img:hover {
+      transform: scale(1.05); /* Slightly enlarge the image */
+      filter: drop-shadow(0 0 15px rgb(191, 203, 255)); /* Apply glow effect around the image */
+    }
+
+    /* Initial positions */
+    #floor1 {
+      top: 2%;
+      left: 50%;
+      transform: translate(-50%, 0) rotate(-5deg);
+      z-index: 4;
+    }
+
+    #floor2 {
+      top: 15%;
+      left: 55%;
+      transform: translate(-50%, 0) rotate(3deg);
+      z-index: 3;
+    }
+
+    #floor3 {
+      top: 28%;
+      left: 45%;
+      transform: translate(-50%, 0) rotate(-3deg);
+      z-index: 2;
+    }
+
+    #floor4 {
+      top: 36%;
+      left: 52%;
+      transform: translate(-50%, 0) rotate(4deg);
+      z-index: 1;
+    }
+
+    #floor5 {
+      top: 58%;
+      left: 48%;
+      transform: translate(-50%, 0) rotate(-2deg);
+      z-index: 2;
+    }
+
+    /* Style for the magnifying glass */
+    .magnifying-glass {
+      position: fixed;
+      width: 250px; /* Increased size for magnifying glass */
+      height: 250px; /* Increased size for magnifying glass */
+      border-radius: 50%;
+      border: 2px solid white;
+      background: rgba(255, 255, 255, 0.3);
+      pointer-events: none;
+      display: none;
+      background-size: 200%; /* Larger size for magnification effect */
+      z-index: 10;
+      right: 20px; /* Move it near the right margin */
+      top: 50%; /* Keep it centered vertically */
+      transform: translateY(-50%);
+    }
+
+    /* Adjust vertical text container */
+    .vertical-text-container {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: row; /* Use row instead of column */
+      justify-content: space-between; /* Space out the lines horizontally */
+      width: 100%;
+      max-width: 800px; /* Limit width for cleaner spacing */
+    }
+
+    /* Style for each line */
+    .vertical-text-line {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 20px; /* Space between the letters */
+      opacity: 0;
+      animation: slideIn 2s forwards;
+    }
+
+    /* Specific line position adjustments (horizontal only) */
+    .line1 { left: -30%; }
+    .line2 { left: -20%; }
+    .line3 { left: 20%; }
+    .line4 { left: 30%; }
+
+    /* For each letter */
+    .vertical-letter {
+      font-size: 3rem; /* Adjust the size as needed */
+      color: white; /* Text color */
+      opacity: 0;
+      animation: slideIn 2s forwards; /* Animation for sliding in from top */
+    }
+
+    /* Space between certain letters */
+    .space {
+      width: 1.5em;
+      height: 3rem; /* Add height to match the letter's size */
+    }
+
+    /* Keyframes for the sliding animation */
+    @keyframes slideIn {
+      0% {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+      100% {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="vertical-text-container">
+    <!-- Line 1: WELCOME -->
+    <div class="vertical-text-line line1">
+      <div class="vertical-letter">W</div>
+      <div class="vertical-letter">E</div>
+      <div class="vertical-letter">L</div>
+      <div class="vertical-letter">C</div>
+      <div class="vertical-letter">O</div>
+      <div class="vertical-letter">M</div>
+      <div class="vertical-letter">E</div>
+    </div>
+
+    <!-- Line 2: TO YOUR -->
+    <div class="vertical-text-line line2">
+      <div class="vertical-letter">T</div>
+      <div class="vertical-letter">O</div>
+      <div class="space"></div>
+      <div class="vertical-letter">Y</div>
+      <div class="vertical-letter">O</div>
+      <div class="vertical-letter">U</div>
+      <div class="vertical-letter">R</div>
+    </div>
+
+    <!-- Line 3: MEMORY -->
+    <div class="vertical-text-line line3">
+      <div class="vertical-letter">M</div>
+      <div class="vertical-letter">E</div>
+      <div class="vertical-letter">M</div>
+      <div class="vertical-letter">O</div>
+      <div class="vertical-letter">R</div>
+      <div class="vertical-letter">Y</div>
+    </div>
+
+    <!-- Line 4: PALACE -->
+    <div class="vertical-text-line line4">
+      <div class="vertical-letter">P</div>
+      <div class="vertical-letter">A</div>
+      <div class="vertical-letter">L</div>
+      <div class="vertical-letter">A</div>
+      <div class="vertical-letter">C</div>
+      <div class="vertical-letter">E</div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="floor" id="floor1">
+      <img src="floor1.png" alt="Floor 1">
+    </div>
+    <div class="floor" id="floor2">
+      <img src="floor2.png" alt="Floor 2">
+    </div>
+    <div class="floor" id="floor3">
+      <img src="floor3.png" alt="Floor 3">
+    </div>
+    <div class="floor" id="floor4">
+      <a href="memories.html">
+        <img src="floor4.png" alt="Floor 4">
+      </a>
+    </div>
+    <div class="floor" id="floor5">
+      <img src="floor5.png" alt="Floor 5">
+    </div>
+    <div id="magnifying-glass" class="magnifying-glass"></div>
+  </div>
+
+  <script>
+    // Adjust image sizes dynamically
+    const adjustFloors = () => {
+      const floors = document.querySelectorAll('.floor img');
+      floors.forEach(floor => {
+        floor.style.width = '60vw'; // Ensure consistent width
+        floor.style.maxWidth = '400px'; // Ensure consistent max width
+      });
+    };
+
+    // Apply parallax effect
+    const applyParallax = () => {
+      const floors = document.querySelectorAll('.floor');
+      const scrollTop = window.scrollY;
+
+      floors.forEach((floor, index) => {
+        const speed = 0.2 + index * 0.1; // Different speed for each floor
+        const offset = scrollTop * speed;
+        floor.style.transform = `translate(-50%, ${offset}px) rotate(${index % 2 === 0 ? -3 : 3}deg)`;
+      });
+    };
+
+    // Magnifying effect
+    const magnifyingGlass = document.getElementById("magnifying-glass");
+
+    const magnify = (e) => {
+      const image = e.target;
+      const imageRect = image.getBoundingClientRect();
+      const offsetX = e.clientX - imageRect.left;
+      const offsetY = e.clientY - imageRect.top;
+
+      const zoomLevel = 3; // Level of zoom
+      magnifyingGlass.style.display = "block";
+      magnifyingGlass.style.backgroundImage = `url(${image.src})`;
+      magnifyingGlass.style.backgroundSize = `${image.width * zoomLevel}px ${image.height * zoomLevel}px`;
+      magnifyingGlass.style.backgroundPosition = `-${offsetX * zoomLevel - magnifyingGlass.offsetWidth / 2}px -${offsetY * zoomLevel - magnifyingGlass.offsetHeight / 2}px`;
+      magnifyingGlass.style.left = `${e.clientX + 20}px`;
+      magnifyingGlass.style.top = `${e.clientY}px`;
+    };
+
+    document.querySelectorAll('.floor img').forEach(img => {
+      img.addEventListener("mousemove", magnify);
+    });
+
+    // Event listener to handle parallax effect
+    window.addEventListener('scroll', () => {
+      applyParallax();
+    });
+
+    // Initialize adjustments
+    window.onload = () => {
+      adjustFloors();
+      applyParallax();
+    };
+  </script>
+</body>
+</html>

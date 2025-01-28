@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Draggable Clock Hands</title>
+    <link rel="stylesheet" href="styles1.css">
+</head>
+<body>
+    <!-- Background sound for the clock -->
+    <audio id="background-sound" src="ticking.mp3" loop></audio>
+
+    <div class="speech-bubble"></div>
+    <div class="speech-bubble2"></div>
+    <img class="static" src="watchdraft.png" alt="Static Image">
+
+    <div class="clock">
+        <div class="center-point"></div>
+        <div class="hour-hand draggable" id="hour-hand"></div>
+        <div class="minute-hand draggable" id="minute-hand"></div>
+        <!-- Constant popup -->
+        <div class="popup" id="popup">Change the time</div>
+    </div>
+
+    <script>
+        const hourHand = document.getElementById('hour-hand');
+        const minuteHand = document.getElementById('minute-hand');
+        const clock = document.querySelector('.clock');
+        const audio = document.getElementById('background-sound');
+
+        let hourAngle = 0; // Track the current angle of the hour hand
+        let minuteAngle = 0; // Track the current angle of the minute hand
+
+        // Function to calculate the angle of the hand based on the mouse position
+        function getAngle(x, y, centerX, centerY) {
+            const deltaX = x - centerX;
+            const deltaY = y - centerY;
+            let angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+            return angle < 0 ? angle + 360 : angle; // Convert to positive angle
+        }
+
+        // Function to handle dragging the clock hands
+        function dragHand(event, hand, angleRef) {
+            const rect = clock.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const newAngle = getAngle(event.clientX, event.clientY, centerX, centerY);
+
+            // Calculate the shortest angle difference
+            let angleDifference = newAngle - angleRef.current;
+
+            // Handle angle wrapping to ensure smooth rotation
+            if (angleDifference > 180) {
+                angleDifference -= 360;
+            } else if (angleDifference < -180) {
+                angleDifference += 360;
+            }
+
+            // Update the current angle
+            angleRef.current += angleDifference;
+
+            // Apply the rotation to the hand
+            hand.style.transform = `rotate(${angleRef.current}deg)`;
+        }
+
+        // Make the clock hands draggable
+        function makeDraggable(hand, angleRef) {
+            let isDragging = false;
+
+            hand.addEventListener('mousedown', () => {
+                isDragging = true;
+                if (audio.paused) {
+                    audio.play(); // Play sound when interaction starts
+                }
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if (isDragging) {
+                    dragHand(event, hand, angleRef);
+                    // Add an effect (example: create stars around the clock)
+                    createInteractiveEffect(event);
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+        }
+
+        // Add draggable functionality to both hands
+        makeDraggable(hourHand, { current: hourAngle });
+        makeDraggable(minuteHand, { current: minuteAngle });
+
+        // Typing effect for the speech bubbles (optional)
+        const text1 = "What's the time?";
+        const bubble1 = document.querySelector('.speech-bubble');
+        let index1 = 0;
+
+        function typeText1() {
+            if (index1 < text1.length) {
+                bubble1.textContent += text1.charAt(index1);
+                index1++;
+                setTimeout(typeText1, 100); // Adjust speed here
+            } else {
+                startSecondBubble();
+            }
+        }
+
+        setTimeout(typeText1, 500); // Delay before typing starts
+
+        const text2 = "Time keeps running away from me. How do I make it stop?";
+        const bubble2 = document.querySelector('.speech-bubble2');
+        let index2 = 0;
+
+        const lineBreakIndex = text2.indexOf("How");
+
+        function typeText2() {
+            if (index2 < text2.length) {
+                if (index2 === lineBreakIndex) {
+                    bubble2.innerHTML += "<br>";
+                }
+                if (index2 === text2.indexOf("stop")) {
+                    bubble2.innerHTML += `<a href="time.html" style="text-decoration: none; color: #013bfd;">stop</a>`;
+                    index2 += 4;
+                } else {
+                    bubble2.innerHTML += text2.charAt(index2);
+                    index2++;
+                }
+                setTimeout(typeText2, 100); // Adjust speed here
+            }
+        }
+
+        function startSecondBubble() {
+            setTimeout(typeText2, 500);
+        }
+
+        // Create an interactive effect (like stars) when the user moves the hands
+        function createInteractiveEffect(e) {
+            const arr = [1, 0.9, 0.8, 0.5, 0.2];
+            arr.forEach(function(i) {
+                const x = (1 - i) * 75;
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.top = e.pageY + Math.round(Math.random() * x - x / 2) + 'px';
+                star.style.left = e.pageX + Math.round(Math.random() * x - x / 2) + 'px';
+                document.body.appendChild(star);
+                window.setTimeout(function() {
+                    document.body.removeChild(star);
+                }, Math.round(Math.random() * i * 600));
+            });
+        }
+    </script>
+</body>
+</html>

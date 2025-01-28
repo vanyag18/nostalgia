@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Diary</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+    position: relative;
+    width: 85%;
+    max-width: 1000px;
+    aspect-ratio: 16 / 9;
+    background: url('diary.png') no-repeat center center;
+    background-size: contain;
+    transition: transform 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-top: -5%; /* Moves the container upwards */
+}
+
+.content {
+    position: absolute;
+    width: 30%;
+    right: 26.4%;
+    top: 30%; /* Adjusted to move the content up */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 20px;
+}
+
+        .container:hover {
+            transform: scale(1.05);
+        }
+
+        .prompt {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            color: white;
+            line-height: 1.5;
+        }
+
+        textarea {
+            width: 100%;
+            height: 80px;
+            font-size: 14px;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid #ddd;
+            padding: 8px;
+            resize: none;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Save Message Button Style */
+        .save-button {
+            padding: 15px 40px;
+            font-size: 18px;
+            background-color: transparent;
+            color: rgb(255, 255, 255);
+            border: 2px solid #fff;
+            border-radius: 50px; /* Oval shape */
+            font-family: 'Courier New', Courier, monospace;
+            cursor: pointer;
+            overflow: hidden;
+            text-align: center;
+            display: inline-block;
+        }
+
+        .save-button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .written-text {
+            font-size: 16px;
+            color: white;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            overflow: hidden;
+            border-right: 2px solid white;
+            animation: blink-cursor 0.5s steps(2, start) infinite;
+        }
+
+        @keyframes blink-cursor {
+            0%, 100% { border-color: white; }
+            50% { border-color: transparent; }
+        }
+
+        .back-button-wrapper {
+            position: absolute;
+            bottom: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            flex-direction: column; /* Stacks the messages and button vertically */
+            align-items: center;
+        }
+
+        .long-press-button {
+            position: relative;
+            display: inline-block;
+            width: 300px;
+            padding: 15px 0;
+            background-color: transparent;
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            border: 2px solid #fff;
+            border-radius: 50px;
+            cursor: pointer;
+            overflow: hidden;
+            text-align: center;
+            display: none; /* Initially hidden */
+        }
+
+        .long-press-button span {
+            position: relative;
+            z-index: 2;
+            display: inline-block;
+        }
+
+        .loading-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            width: 0;
+            z-index: 1;
+            transition: width 1.5s linear; /* Faster fill animation */
+        }
+
+        .reminder-message {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 18px;
+            color: white;
+            margin-bottom: 20px; /* Space between message and button */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <div class="prompt">Write a message to your<br>past self:</div>
+            <textarea id="messageBox" placeholder="Type your message here..."></textarea>
+            <button class="save-button" id="saveButton" onclick="saveMessage()">Save Message</button>
+            <div class="written-text" id="writtenText" style="display: none;"></div>
+        </div>
+    </div>
+
+    <div class="back-button-wrapper">
+        <!-- Reminder message appears above the button -->
+        <div id="reminderMessage" class="reminder-message" style="display: none;">
+            Enough reminiscing for today, your time's up.
+        </div>
+
+        <!-- Head Back to Reality Button -->
+        <button id="backButton" class="long-press-button">
+            <span>Head Back to Reality</span>
+            <div id="loadingBar" class="loading-bar"></div>
+        </button>
+    </div>
+
+    <script>
+        let pressStartTime;
+        let pressInProgress = false;
+
+        function saveMessage() {
+            const messageBox = document.getElementById('messageBox');
+            const writtenText = document.getElementById('writtenText');
+            const saveButton = document.getElementById('saveButton');
+            const backButton = document.getElementById('backButton');
+            const loadingBar = document.getElementById('loadingBar');
+            const reminderMessage = document.getElementById('reminderMessage');
+            const message = messageBox.value;
+
+            if (message.trim() === "") {
+                alert("Please write a message before saving.");
+                return;
+            }
+
+            // Hide the textarea and save button
+            messageBox.style.display = "none";
+            saveButton.style.display = "none"; 
+
+            // Display the typing animation
+            writtenText.style.display = "block";
+
+            let index = 0;
+            writtenText.textContent = ""; // Clear previous text content
+
+            function typeWriter() {
+                if (index < message.length) {
+                    writtenText.textContent += message.charAt(index);
+                    index++;
+                    setTimeout(typeWriter, 150); // Slower speed: 150ms per character
+                } else {
+                    // Remove blinking cursor after typing ends
+                    writtenText.style.borderRight = "none";
+
+                    // Show the reminder message and the "Head Back to Reality" button after typing ends
+                    setTimeout(function() {
+                        reminderMessage.style.display = "block"; // Show reminder message
+                        backButton.style.display = "inline-block"; // Ensure button is shown
+                    }, 500); // Delay to ensure smooth transition
+                }
+            }
+
+            typeWriter();
+        }
+
+        // Start the progress bar when the user starts pressing the button
+        document.getElementById('backButton').addEventListener('mousedown', function() {
+            pressStartTime = Date.now();
+            pressInProgress = true;
+
+            const loadingBar = document.getElementById('loadingBar');
+            loadingBar.style.width = '0'; // Reset to 0 width initially
+
+            // Update the progress bar while the button is held
+            function updateProgress() {
+                if (pressInProgress) {
+                    let elapsedTime = Date.now() - pressStartTime;
+                    let progressPercentage = Math.min((elapsedTime / 1500) * 100, 100); // 1.5s for full progress
+                    loadingBar.style.width = progressPercentage + "%";
+                    if (progressPercentage < 100) {
+                        requestAnimationFrame(updateProgress);
+                    }
+                }
+            }
+            updateProgress();
+        });
+
+        // Stop the progress bar when the user releases the button
+        document.getElementById('backButton').addEventListener('mouseup', function() {
+            if (pressInProgress) {
+                pressInProgress = false;
+                const loadingBar = document.getElementById('loadingBar');
+                loadingBar.style.width = "0%"; // Reset progress bar
+                window.location.href = 'index2.html'; // Navigate after the hold ends
+            }
+        });
+
+        document.getElementById('backButton').addEventListener('mouseleave', function() {
+            if (pressInProgress) {
+                pressInProgress = false;
+                const loadingBar = document.getElementById('loadingBar');
+                loadingBar.style.width = "0%"; // Reset progress bar if mouse leaves
+            }
+        });
+    </script>
+</body>
+</html>

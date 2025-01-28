@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memories</title>
+    <style>
+        body {
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden; 
+        }
+
+        .container {
+            position: relative;
+            width: 800px; 
+        }
+
+        .treasure {
+            width: 100%;
+            display: block;
+        }
+
+        .treasure-top {
+            position: absolute;
+            top: 12%;
+            left: 0;
+            width: 100%;
+            z-index: 3;
+        }
+
+        .overlay-image {
+            position: absolute; 
+            cursor: grab; 
+        }
+
+        .teddy {
+            top: 1%;
+            left: 0%;
+            width: 184px;
+            z-index: 0;
+        }
+
+        .book {
+            top: 1%;
+            left: 16%;
+            width: 280px;
+            z-index: 1;
+        }
+
+        .nintendo {
+            top: 10%;
+            left: 37%;
+            width: 208px;
+            z-index: 2;
+        }
+
+        .ball {
+            top: 10%;
+            left: 55%;
+            width: 208px;
+            z-index: 1;
+        }
+        .diary {
+            top: 10%;
+            left: 20%;
+            width: 26%;
+            z-index: 0;
+        }
+        a {
+            cursor: grab; 
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="treasure.png" alt="Treasure" class="treasure" draggable="false">
+        <img src="treasuretop.png" alt="Treasure Top" class="treasure-top" draggable="false">
+        <img src="teddy.png" alt="Teddy" class="overlay-image teddy" id="teddy">
+        <img src="book.png" alt="Book" class="overlay-image book" id="book">
+        <img src="nintendo.png" alt="Nintendo" class="overlay-image nintendo" id="nintendo">
+        <img src="ball.png" alt="Ball" class="overlay-image ball" id="ball">
+        <!-- Add link to diary page with full clickable area -->
+        <a href="diary.html">
+            <img src="notebook.png" alt="diary" class="overlay-image diary" id="diary">
+        </a>
+    </div>
+
+    <script>
+        let draggedElement = null;
+        let offsetX = 0, offsetY = 0;
+        let container = document.querySelector('.container')
+        containerLeft = container.getBoundingClientRect().left;
+        containerTop = container.getBoundingClientRect().top;
+
+        // Function to start dragging
+        const startDrag = (e) => {
+            console.log("Started dragging")
+            draggedElement = e.target;
+
+            // Ensure position:absolute is set for the dragged element
+            const rect = draggedElement.getBoundingClientRect();
+            console.log("rect", rect.left, rect.top);
+            // Compute offsets relative to the mouse click
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+
+            console.log("offsets", offsetX, offsetY, e.clientX, e.clientY);   
+
+            // Change cursor and bring element to the top
+            draggedElement.style.cursor = 'grabbing';
+            draggedElement.style.zIndex = 1000;
+
+            // Attach mousemove and mouseup events
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag, { once: true });
+        };
+
+        // Function to handle the dragging motion
+        const onDrag = (e) => {
+            console.log("ondrag", e.clientX, e.clientY);
+            if (!draggedElement) return;
+            // Calculate new position for the dragged element
+            const x = e.clientX - offsetX;
+            const y = e.clientY - offsetY;
+
+            // Update the element's position
+            draggedElement.style.position = 'fixed';
+            draggedElement.style.left = `${ x}px`;
+            draggedElement.style.top = `${y}px`;
+        };
+
+        const stopDrag = () => {
+            console.log("stopdrag");
+            if (draggedElement) {
+                draggedElement.style.cursor = 'grab'; // Reset the cursor
+                draggedElement.style.zIndex = ''; // Reset the z-index
+                draggedElement = null; // Clear the reference
+
+                // Remove mousemove listener
+                document.removeEventListener('mousemove', onDrag);
+            }
+        };
+
+        const draggableElements = document.querySelectorAll('.overlay-image');
+        document.addEventListener('mousemove', (e)=>{
+        });
+        draggableElements.forEach((element) => {
+            element.addEventListener('mousedown', startDrag);
+            element.setAttribute('draggable', false);
+        });
+    </script>
+</body>
+</html>
