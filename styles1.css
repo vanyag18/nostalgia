@@ -1,0 +1,157 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+img.static {
+    position: absolute; /* Ensures the image doesn't interfere with layout flow */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Full viewport width */
+    height: 100vh; /* Full viewport height */
+    object-fit: cover; /* Ensures the image covers the screen proportionally */
+    z-index: -1; /* Places the image behind other content */
+}
+
+.speech-bubble {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    padding: 20px 30px; /* Increased padding for a larger bubble */
+    background: #fff;
+    color: #000000;
+    font-family: 'Courier New', Courier, monospace; /* Typewriter-style font */
+    font-size: 25px; /* Increased font size */
+    font-weight: bold;
+    border: 3px solid #000000; /* Slightly thicker border for better proportion */
+    border-radius: 15px; /* Adjusted for a smoother, larger bubble */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.speech-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #fff;
+    border-top-color: inherit;
+}
+
+.speech-bubble2 {
+    position: absolute;
+    bottom: 7%;
+    right: 3.5%;
+    padding: 10px;
+    background: #fff;
+    color: #000000;
+    font-family: 'Courier New', Courier, monospace; /* Typewriter-style font */
+    font-size: 25px; /* Increased font size */
+    font-weight: bold;
+    border: 3px solid #000000; /* Slightly thicker border for better proportion */
+    border-radius: 15px; /* Adjusted for a smoother, larger bubble */
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+.speech-bubble2::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    right: 20px;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #fff;
+    border-bottom-color: inherit;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.star {
+	position: fixed;
+	pointer-events: none;
+}
+
+.star:before, .star:after {
+	position: absolute;
+	top: 0;
+	left: 0;
+	content: '\2726';
+	font-size: 5px;
+}
+
+.star:before {
+	color: transparent;
+	text-shadow: 0 0 3px rgb(250, 250, 174);
+}
+
+.star:after {
+	background: rgb(240, 240, 225);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+
+/* Center Point */
+.center-point {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    background: #333;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+}
+
+.hour-hand,
+.minute-hand {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: 50% 0%;
+    transform: rotate(0deg);
+    transition: transform 0.1s ease;
+    cursor: grab;
+}
+
+.hour-hand {
+    width: 6px;
+    height: 100px;
+    background: #555;
+    z-index: 1;
+}
+
+.minute-hand {
+    width: 4px;
+    height: 140px;
+    background: #888;
+    z-index: 1;
+}
+
+.popup {
+    position: absolute;
+    top: 17%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 18px;
+    
+}
